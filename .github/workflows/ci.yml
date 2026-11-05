@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts  # isolated-vm (dev-only, via n8n-workflow) fails to compile on runners; not needed to build/test
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
