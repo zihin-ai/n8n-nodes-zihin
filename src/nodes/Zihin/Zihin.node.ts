@@ -6,7 +6,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { validateBaseUrl, validateApiKeyFormat, sanitizeApiError } from '../../utils/security';
+import { validateBaseUrl, sanitizeApiError } from '../../utils/security';
 
 /**
  * Deadline local por operação, logo ACIMA do teto do BE para cada rota de mídia
@@ -336,16 +336,6 @@ export class Zihin implements INodeType {
 		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
 
-		// Get credentials
-		const credentials = await this.getCredentials('zihinApi');
-		const apiKey = credentials.apiKey as string;
-
-		// Validate API key
-		const apiKeyValidation = validateApiKeyFormat(apiKey);
-		if (!apiKeyValidation.valid) {
-			throw new NodeOperationError(this.getNode(), 'Invalid API key configuration');
-		}
-
 		// Get global options
 		const globalOptions = this.getNodeParameter('options', 0, {}) as {
 			baseUrl?: string;
@@ -451,12 +441,12 @@ export class Zihin implements INodeType {
 				// (`headersTimeout`), e estas rotas só respondem no fim — a transcrição longa (até 390s no
 				// BE) morreria antes. Aqui o `timeout` cobre a requisição inteira (corpo incluso), não
 				// sobra timer em erro de rede, e cancelar a execução no n8n aborta a chamada.
-				const response = (await this.helpers.httpRequest({
+				// A key entra pelo `authenticate` da credencial (header X-Api-Key), nunca à mão.
+				const response = (await this.helpers.httpRequestWithAuthentication.call(this, 'zihinApi', {
 					method: 'POST',
 					url: `${baseUrl}${endpoint}`,
 					headers: {
 						'Content-Type': 'application/json',
-						'X-Api-Key': apiKey,
 					},
 					body,
 					json: true,

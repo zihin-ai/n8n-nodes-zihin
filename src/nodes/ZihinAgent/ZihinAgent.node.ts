@@ -6,10 +6,13 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
+	sleepWithAbort,
 } from 'n8n-workflow';
 
-import { createClient, sanitizeApiError, ZihinAgentError } from '@zihin/agent-client';
-import type { ContextValue } from '@zihin/agent-client';
+// Entry `/core`: o núcleo sem timers/`process`/`console` globais (o scanner de nó verificado reprova
+// essas referências). Timers vêm do `sleepWithAbort` do n8n — ver `zihinRuntime` abaixo.
+import { createClient, sanitizeApiError, ZihinAgentError } from '@zihin/agent-client/core';
+import type { ContextValue, ZihinRuntime } from '@zihin/agent-client/core';
 
 /**
  * Aceita objeto ou texto JSON (expressão, campo colado). Vazio → undefined (nada é enviado).
@@ -36,6 +39,14 @@ function parseFieldList(value: unknown): string[] | undefined {
 	const list = Array.isArray(value) ? value : value == null ? [] : String(value).split(',');
 	const out = list.map((f) => String(f).trim()).filter(Boolean);
 	return out.length ? out : undefined;
+}
+
+/** Timers do host n8n; avisos de descontinuação do núcleo vão para o logger da execução. */
+function zihinRuntime(logger?: { warn(message: string): void }): ZihinRuntime {
+	return {
+		sleep: sleepWithAbort,
+		warn: (code, message) => logger?.warn(`[${code}] ${message}`),
+	};
 }
 
 /**
@@ -231,6 +242,7 @@ export class ZihinAgent implements INodeType {
 					baseUrl: options.baseUrl || undefined,
 					allowCustomBaseUrl: options.allowCustomBaseUrl,
 					allowHttp: options.allowHttp,
+					runtime: zihinRuntime(this.logger),
 				});
 				try {
 					const agents = await client.listAgents();
@@ -294,6 +306,7 @@ export class ZihinAgent implements INodeType {
 					baseUrl: options.baseUrl || undefined,
 					allowCustomBaseUrl: options.allowCustomBaseUrl,
 					allowHttp: options.allowHttp,
+					runtime: zihinRuntime(this.logger),
 				});
 
 				const result = await client.invokeAgent({

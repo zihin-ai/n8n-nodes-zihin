@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-zihin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "n8n community nodes for Zihin.ai: invoke governed AI agents (Zihin Agent) and process media (image, audio, documents).",
   "keywords": [
     "n8n-community-node-package",
@@ -58,7 +58,7 @@
     "@types/node": "^20.19.43",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "@zihin/agent-client": "^0.8.0",
+    "@zihin/agent-client": "^0.9.0",
     "eslint": "^8.57.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^5.0.0",

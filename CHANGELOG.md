@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+- Passes the official n8n community package scanner (verification requirement).
+- Zihin (media): authenticates through the `zihinApi` credential (`httpRequestWithAuthentication`) instead of setting the `X-Api-Key` header by hand.
+- Zihin Agent: uses `@zihin/agent-client/core` with n8n's `sleepWithAbort` for retry backoff and the call deadline; deprecation notices go to the n8n logger. No behavior change for workflows.
+
 ## 1.0.0 — 2026-11
 
 **Breaking:** the deprecated **Zihin Chat Model** sub-node (`lmChatZihin`) is removed, as announced in 0.7.0. It called the direct LLM gateway, outside the agent's RBAC, quotas, human approvals and audit. Replace it with the **Zihin Agent** node.

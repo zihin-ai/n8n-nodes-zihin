@@ -294,7 +294,15 @@ async function run() {
 	const mctx = (params) => ({
 		...ctx(params, { cancelSignal: cancel }),
 		getNode: () => ({ name: 'Zihin' }),
-		helpers: { httpRequest: async (o) => (reqs.push(o), reply) },
+		helpers: {
+			httpRequest: async () => {
+				throw new Error('o nó de mídia deve autenticar pela credencial (httpRequestWithAuthentication)');
+			},
+			httpRequestWithAuthentication: async function (cred, o) {
+				reqs.push({ ...o, _cred: cred });
+				return reply;
+			},
+		},
 	});
 	globalThis.fetch = async () => {
 		throw new Error('o nó de mídia não deve usar o fetch global');
@@ -304,6 +312,7 @@ async function run() {
 	await media.execute.call(mctx({ resource: 'audio', operation: 'transcribe', audio: 'https://x/a.mp3', options: { timeout: 50000 } }));
 	await media.execute.call(mctx({ resource: 'audio', operation: 'transcribe', audio: 'https://x/a.mp3', options: { timeout: 3e9 } }));
 	ok('transcribe 395s; parse 185s; explicito vence; expressao gigante limitada a 900s', reqs[0].timeout === 395000 && reqs[1].timeout === 185000 && reqs[2].timeout === 50000 && reqs[3].timeout === 900000);
+	ok('autentica pela credencial zihinApi, sem X-Api-Key manual', reqs[0]._cred === 'zihinApi' && !('X-Api-Key' in (reqs[0].headers || {})));
 	ok('helper do n8n com abortSignal do cancelamento e status sem throw', reqs[0].abortSignal === cancel && reqs[0].ignoreHttpStatusErrors === true && reqs[0].json === true && reqs[0].body.audio === 'https://x/a.mp3');
 	ok('saida de midia preservada', mOut[0][0].json.text === 'ok' && mOut[0][0].json._meta.success === true);
 	reply = { statusCode: 502, body: '<html>bad gateway</html>' };
