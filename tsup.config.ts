@@ -9,7 +9,7 @@ import { defineConfig } from 'tsup';
  * - `n8n-workflow` e `@langchain/core` são EXTERNOS (providos pelo host n8n em runtime).
  */
 export default defineConfig({
-	entry: ['src/nodes/**/*.node.ts', 'src/credentials/**/*.credentials.ts'],
+	entry: ['nodes/**/*.node.ts', 'credentials/**/*.credentials.ts'],
 	outDir: 'dist',
 	format: ['cjs'],
 	platform: 'node',

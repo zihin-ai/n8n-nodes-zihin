@@ -1,4 +1,5 @@
 import {
+  Icon,
   IAuthenticateGeneric,
   ICredentialTestRequest,
   ICredentialType,
@@ -8,6 +9,7 @@ import {
 export class ZihinApi implements ICredentialType {
   name = 'zihinApi';
   displayName = 'Zihin API';
+  icon: Icon = { light: 'file:zihin.svg', dark: 'file:zihin.svg' };
   // eslint-disable-next-line n8n-nodes-base/cred-class-field-documentation-url-miscased -- e uma URL https (exigido por cred-class-field-documentation-url-not-http-url); a regra `miscased` a reescreveria em camelCase
   documentationUrl = 'https://docs.zihin.ai/integrations/n8n';
   properties: INodeProperties[] = [

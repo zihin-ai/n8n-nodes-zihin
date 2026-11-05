@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-zihin",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "n8n community nodes for Zihin.ai: invoke governed AI agents (Zihin Agent) and process media (image, audio, documents).",
   "keywords": [
     "n8n-community-node-package",
@@ -34,7 +34,7 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "node test/node.test.js",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint nodes credentials utils --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "prepublishOnly": "npm run build"
   },

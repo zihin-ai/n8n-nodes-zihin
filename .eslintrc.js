@@ -20,6 +20,10 @@ module.exports = {
     es2021: true,
   },
   rules: {
+    // Legacy rules that contradict the current verification scanner (@n8n/scan-community-package),
+    // which requires NodeConnectionTypes.Main instead of the 'main' literal.
+    'n8n-nodes-base/node-class-description-inputs-wrong-regular-node': 'off',
+    'n8n-nodes-base/node-class-description-outputs-wrong': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],

@@ -3,6 +3,7 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeConnectionTypes,
 	NodeOperationError,
 } from 'n8n-workflow';
 
@@ -36,7 +37,8 @@ export class Zihin implements INodeType {
 		displayName: 'Zihin',
 		name: 'zihin',
 		hidden: true,
-		icon: 'file:zihin.svg',
+		icon: { light: 'file:zihin.svg', dark: 'file:zihin.svg' },
+		usableAsTool: true,
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
@@ -44,8 +46,8 @@ export class Zihin implements INodeType {
 		defaults: {
 			name: 'Zihin',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
 				name: 'zihinApi',
@@ -495,7 +497,12 @@ export class Zihin implements INodeType {
 					});
 					continue;
 				}
-				throw error;
+				// Sempre NodeOperationError: o erro cru poderia carregar detalhes do transporte.
+				throw new NodeOperationError(
+					this.getNode(),
+					error instanceof NodeOperationError ? error.message : sanitizeApiError(error).message,
+					{ itemIndex: i },
+				);
 			}
 		}
 

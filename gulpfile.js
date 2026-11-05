@@ -1,11 +1,11 @@
 const { src, dest } = require('gulp');
 
 function buildIcons() {
-  return src(['src/**/*.svg', 'src/**/*.png']).pipe(dest('dist'));
+  return src(['nodes/**/*.{svg,png}', 'credentials/**/*.{svg,png}'], { base: '.' }).pipe(dest('dist'));
 }
 
 function copyJson() {
-  return src('src/**/*.node.json').pipe(dest('dist'));
+  return src('nodes/**/*.node.json', { base: '.' }).pipe(dest('dist'));
 }
 
 exports['build:icons'] = buildIcons;

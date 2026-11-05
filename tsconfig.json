@@ -10,8 +10,8 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "."
   },
-  "include": ["src/**/*"],
+  "include": ["nodes/**/*", "credentials/**/*", "utils/**/*"],
   "exclude": ["node_modules", "dist"]
 }

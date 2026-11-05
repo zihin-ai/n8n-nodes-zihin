@@ -5,6 +5,7 @@ import {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	NodeConnectionTypes,
 	NodeOperationError,
 	sleepWithAbort,
 } from 'n8n-workflow';
@@ -58,7 +59,8 @@ export class ZihinAgent implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Zihin Agent',
 		name: 'zihinAgent',
-		icon: 'file:zihin.svg',
+		icon: { light: 'file:zihin.svg', dark: 'file:zihin.svg' },
+		usableAsTool: true,
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{"agent: " + ($parameter["agentId"] || "")}}',
@@ -66,8 +68,8 @@ export class ZihinAgent implements INodeType {
 		defaults: {
 			name: 'Zihin Agent',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
 				name: 'zihinApi',

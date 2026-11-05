@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2
+
+- Repository layout follows the n8n node starter (`nodes/`, `credentials/` at the root) so the Creator Portal finds the sources.
+- Source passes the verification scanner: `usableAsTool`, `NodeConnectionTypes.Main`, themed icons, credential icon, and the media node always throws `NodeOperationError`.
+
 ## 1.0.1
 
 - Passes the official n8n community package scanner (verification requirement).
