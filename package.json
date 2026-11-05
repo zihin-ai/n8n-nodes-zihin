@@ -1,0 +1,75 @@
+{
+  "name": "n8n-nodes-zihin",
+  "version": "1.0.0",
+  "description": "n8n community nodes for Zihin.ai: invoke governed AI agents (Zihin Agent) and process media (image, audio, documents).",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "zihin",
+    "ai-agent",
+    "agents",
+    "governance",
+    "human-in-the-loop",
+    "mcp",
+    "media-processing",
+    "ocr",
+    "transcription"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.zihin.ai",
+  "bugs": {
+    "url": "https://github.com/zihin-ai/n8n-nodes-zihin/issues"
+  },
+  "author": {
+    "name": "Zihin AI Inc.",
+    "email": "support@zihin.ai"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zihin-ai/n8n-nodes-zihin.git"
+  },
+  "main": "dist/nodes/ZihinAgent/ZihinAgent.node.js",
+  "scripts": {
+    "build": "tsup && gulp build:icons && gulp build:json",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/node.test.js",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/ZihinApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/ZihinAgent/ZihinAgent.node.js",
+      "dist/nodes/Zihin/Zihin.node.js"
+    ]
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@zihin/agent-client": "^0.8.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
+    "gulp": "^5.0.0",
+    "n8n-workflow": "^1.82.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=20.16.0"
+  },
+  "allowScripts": {
+    "esbuild@0.27.7": true
+  }
+}

@@ -1,0 +1,50 @@
+# Publishes to npm with provenance on a vX.Y.Z tag, using npm Trusted Publishing (OIDC).
+# One-time setup on npmjs.com: package n8n-nodes-zihin → Settings → Trusted Publisher →
+# GitHub Actions, repository zihin-ai/n8n-nodes-zihin, workflow publish.yml. No NPM_TOKEN needed.
+name: Publish to npm
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "npm publish --dry-run"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+      - name: npm with Trusted Publishing support
+        run: npm install -g npm@^11.5.1
+      - run: npm ci
+      - run: npm run typecheck && npm run lint && npm run build && npm test
+      - name: Tag matches package.json version
+        if: github.ref_type == 'tag'
+        run: |
+          v=$(node -p 'require("./package.json").version')
+          [ "v$v" = "${GITHUB_REF_NAME}" ] || { echo "tag ${GITHUB_REF_NAME} != package v$v"; exit 1; }
+      - name: Publish
+        run: npm publish --provenance --access public ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}
+      - name: n8n community package scan
+        if: github.ref_type == 'tag'
+        run: |
+          v=$(node -p 'require("./package.json").version')
+          for i in 1 2 3 4 5 6; do npm view n8n-nodes-zihin@$v version >/dev/null 2>&1 && break; sleep 20; done
+          npx -y @n8n/scan-community-package n8n-nodes-zihin@$v
