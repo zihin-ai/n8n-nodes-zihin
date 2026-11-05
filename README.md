@@ -196,3 +196,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 - [GitHub Issues](https://github.com/zihin-ai/n8n-nodes-zihin/issues)
 
 **License**: MIT | Developed by [Zihin AI Inc](https://zihin.ai)
+
+---
+
+Made by [Zihin.ai](https://www.zihin.ai). If this project is useful to you, a ⭐ helps others find it.
