@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-zihin",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "n8n community nodes for Zihin.ai: invoke governed AI agents (Zihin Agent) and process media (image, audio, documents).",
   "keywords": [
     "n8n-community-node-package",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+- Limit the package to runtime nodes, credentials, required icons and package documentation.
+- Remove implementation comments from bundles and use English public repository text.
+- Validate package contents before publication.
+
 ## 1.0.2
 
 - Repository layout follows the n8n node starter (`nodes/`, `credentials/` at the root) so the Creator Portal finds the sources.
