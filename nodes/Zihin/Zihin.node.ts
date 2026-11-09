@@ -9,11 +9,6 @@ import {
 
 import { validateBaseUrl, sanitizeApiError } from '../../utils/security';
 
-/**
- * Deadline local por operação, logo ACIMA do teto do BE para cada rota de mídia
- * (zihin-agent-builder#515, `config/express.js`: transcribe 390s; analyze/parse 180s). Abaixo
- * dele o nó abortaria um trabalho que o servidor segue processando — e cobrando (#92).
- */
 export const MEDIA_TIMEOUT_DEFAULTS_MS = {
 	transcribe: 395000,
 	analyze: 185000,
@@ -28,10 +23,6 @@ interface ZihinApiResponse {
 	execution_time_ms?: number;
 }
 
-/**
- * Zihin App Node - Media Processing
- * Provides Image Analysis, Audio Transcription, and Document Parsing
- */
 export class Zihin implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Zihin',
@@ -55,9 +46,7 @@ export class Zihin implements INodeType {
 			},
 		],
 		properties: [
-			// ============================================
-			// Resource Selector
-			// ============================================
+
 			{
 				displayName: 'Resource',
 				name: 'resource',
@@ -83,9 +72,6 @@ export class Zihin implements INodeType {
 				default: 'image',
 			},
 
-			// ============================================
-			// IMAGE Operations
-			// ============================================
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -106,7 +92,7 @@ export class Zihin implements INodeType {
 				],
 				default: 'analyze',
 			},
-			// Image fields
+
 			{
 				displayName: 'Image',
 				name: 'image',
@@ -183,9 +169,6 @@ export class Zihin implements INodeType {
 				],
 			},
 
-			// ============================================
-			// AUDIO Operations
-			// ============================================
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -206,7 +189,7 @@ export class Zihin implements INodeType {
 				],
 				default: 'transcribe',
 			},
-			// Audio fields
+
 			{
 				displayName: 'Audio',
 				name: 'audio',
@@ -283,9 +266,6 @@ export class Zihin implements INodeType {
 				],
 			},
 
-			// ============================================
-			// Global Options
-			// ============================================
 			{
 				displayName: 'Options',
 				name: 'options',
@@ -338,7 +318,6 @@ export class Zihin implements INodeType {
 		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
 
-		// Get global options
 		const globalOptions = this.getNodeParameter('options', 0, {}) as {
 			baseUrl?: string;
 			allowCustomBaseUrl?: boolean;
@@ -346,7 +325,6 @@ export class Zihin implements INodeType {
 			timeout?: number;
 		};
 
-		// Validate base URL
 		const urlValidation = validateBaseUrl(globalOptions.baseUrl || '', {
 			allowCustomDomains: globalOptions.allowCustomBaseUrl ?? false,
 			allowLocalhost: globalOptions.allowLocalhost ?? false,
@@ -355,11 +333,7 @@ export class Zihin implements INodeType {
 			throw new NodeOperationError(this.getNode(), `Invalid base URL: ${urlValidation.error}`);
 		}
 		const baseUrl = urlValidation.sanitizedUrl || 'https://llm.zihin.ai';
-		// Desde o #515 do BE cada rota de mídia tem teto próprio e longo (não mais o global de 30s
-		// com 408). O default fica logo acima dele: o desfecho do servidor chega antes do nosso abort.
-		// `0`/vazio/expressão não resolvida = automático.
-		// O teto também vale para expressão (o `maxValue` só limita o widget): acima de 2^31 o timer
-		// estoura e vira abort imediato.
+
 		const custom = Number(globalOptions.timeout);
 		const timeout =
 			Number.isFinite(custom) && custom > 0
@@ -372,9 +346,6 @@ export class Zihin implements INodeType {
 				let endpoint = '';
 				let body: Record<string, unknown> = {};
 
-				// ============================================
-				// IMAGE: Analyze
-				// ============================================
 				if (resource === 'image' && operation === 'analyze') {
 					endpoint = '/api/v3/media/image/public/analyze';
 
@@ -439,11 +410,6 @@ export class Zihin implements INodeType {
 					};
 				}
 
-				// Helper HTTP do n8n, não o `fetch` global: o undici do Node desiste aos 300s sem headers
-				// (`headersTimeout`), e estas rotas só respondem no fim — a transcrição longa (até 390s no
-				// BE) morreria antes. Aqui o `timeout` cobre a requisição inteira (corpo incluso), não
-				// sobra timer em erro de rede, e cancelar a execução no n8n aborta a chamada.
-				// A key entra pelo `authenticate` da credencial (header X-Api-Key), nunca à mão.
 				const response = (await this.helpers.httpRequestWithAuthentication.call(this, 'zihinApi', {
 					method: 'POST',
 					url: `${baseUrl}${endpoint}`,
@@ -459,7 +425,7 @@ export class Zihin implements INodeType {
 				})) as { statusCode: number; body: unknown };
 
 				const ok = response.statusCode >= 200 && response.statusCode < 300;
-				// 5xx de proxy pode vir em texto/HTML: vira erro com o status, sem ecoar o corpo.
+
 				const result: ZihinApiResponse =
 					response.body && typeof response.body === 'object'
 						? (response.body as ZihinApiResponse)
@@ -473,7 +439,6 @@ export class Zihin implements INodeType {
 					throw new NodeOperationError(this.getNode(), sanitized.message);
 				}
 
-				// Return the data field directly for easier access in workflows
 				returnData.push({
 					json: {
 						...result.data,
@@ -497,7 +462,7 @@ export class Zihin implements INodeType {
 					});
 					continue;
 				}
-				// Sempre NodeOperationError: o erro cru poderia carregar detalhes do transporte.
+
 				throw new NodeOperationError(
 					this.getNode(),
 					error instanceof NodeOperationError ? error.message : sanitizeApiError(error).message,

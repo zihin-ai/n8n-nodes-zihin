@@ -10,15 +10,9 @@ import {
 	sleepWithAbort,
 } from 'n8n-workflow';
 
-// Entry `/core`: o núcleo sem timers/`process`/`console` globais (o scanner de nó verificado reprova
-// essas referências). Timers vêm do `sleepWithAbort` do n8n — ver `zihinRuntime` abaixo.
 import { createClient, sanitizeApiError, ZihinAgentError } from '@zihin/agent-client/core';
 import type { ContextValue, ZihinRuntime } from '@zihin/agent-client/core';
 
-/**
- * Aceita objeto ou texto JSON (expressão, campo colado). Vazio → undefined (nada é enviado).
- * Inválido → `null`: o chamador lança o `NodeOperationError` (exigência do lint do n8n).
- */
 function parseFlatObject(value: unknown): Record<string, ContextValue> | undefined | null {
 	if (value === undefined || value === null || value === '') return undefined;
 	let v = value;
@@ -34,15 +28,13 @@ function parseFlatObject(value: unknown): Record<string, ContextValue> | undefin
 	return Object.keys(v).length ? (v as Record<string, ContextValue>) : undefined;
 }
 
-/** "a, b" ou ['a','b'] → ['a','b']; vazio → undefined. */
 function parseFieldList(value: unknown): string[] | undefined {
-	// Número/outro tipo vindo de expressão vira texto e o núcleo valida o nome — nunca some em silêncio.
+
 	const list = Array.isArray(value) ? value : value == null ? [] : String(value).split(',');
 	const out = list.map((f) => String(f).trim()).filter(Boolean);
 	return out.length ? out : undefined;
 }
 
-/** Timers do host n8n; avisos de descontinuação do núcleo vão para o logger da execução. */
 function zihinRuntime(logger?: { warn(message: string): void }): ZihinRuntime {
 	return {
 		sleep: sleepWithAbort,
@@ -50,11 +42,6 @@ function zihinRuntime(logger?: { warn(message: string): void }): ZihinRuntime {
 	};
 }
 
-/**
- * Zihin Agent — invokes a hosted Zihin agent over the shared @zihin/agent-client core.
- * The agent runs the full loop (tools, MCP, memory, HITL) under the tenant's RBAC, quota and audit.
- * This is the recommended way to reach Zihin from n8n.
- */
 export class ZihinAgent implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Zihin Agent',
@@ -127,8 +114,7 @@ export class ZihinAgent implements INodeType {
 					},
 					{
 						displayName: 'Consumer Key',
-						// `consumer`, não `consumerKey`: o lint do n8n trata campo terminado em "Key" como
-						// segredo (exigiria password). É um identificador, não credencial.
+
 						name: 'consumer',
 						type: 'string',
 						default: '',
@@ -233,7 +219,7 @@ export class ZihinAgent implements INodeType {
 		loadOptions: {
 			async listAgents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const credentials = await this.getCredentials('zihinApi');
-				// Respeita o Base URL custom do nó para que o dropdown busque no mesmo host da execução.
+
 				const options = (this.getNodeParameter('options', {}) as {
 					baseUrl?: string;
 					allowCustomBaseUrl?: boolean;
@@ -256,7 +242,7 @@ export class ZihinAgent implements INodeType {
 							description: a.bio,
 						}));
 				} catch (error) {
-					// UX limpa no dropdown em vez de propagar um erro cru.
+
 					const message =
 						error instanceof ZihinAgentError ? error.message : sanitizeApiError(error).message;
 					throw new NodeOperationError(this.getNode(), `Could not load agents: ${message}`);
@@ -316,25 +302,17 @@ export class ZihinAgent implements INodeType {
 					message,
 					sessionId: sessionId || undefined,
 					clientMessageId: String(options.clientMessageId ?? '').trim() || undefined,
-					// Telefone vindo de expressão chega número: o n8n não converte parâmetro string.
+
 					consumerKey: String(structured.consumer ?? '').trim() || undefined,
 					context: context ?? undefined,
 					bindings: bindings ?? undefined,
 					sessionFrom: parseFieldList(structured.sessionFrom),
 					includeRaw: options.includeRaw,
-					// Cancelar a execução no n8n agora derruba o turno no backend de verdade (o abort
-					// desce até a chamada ao provider). Sem repassar o signal, cancelar o workflow
-					// deixava o agente rodando sozinho — gastando LLM e tools que ninguém leria.
+
 					signal: this.getExecutionCancelSignal?.(),
-					// `temperature`/`maxTokens` não são repassados: o /stream usa a config do agente e
-					// os ignoraria (descontinuados no SDK desde a 0.6.1). Ficam no formulário só para
-					// workflows salvos continuarem abrindo.
+
 					options: {
-						// Vai como `options.timeout_ms` para o backend — é o teto que ELE respeita — e o
-						// deadline local fica acima disso, para que o desfecho do servidor chegue antes
-						// do nosso abort. Passar isto na config do cliente não alcança o backend.
-						// A guarda importa: `minValue` só limita o widget, não uma expressão que
-						// resolva para "" / null / 0 — e aí o núcleo lançaria erro de config.
+
 						timeoutMs:
 							Number.isFinite(Number(options.timeoutMs)) && Number(options.timeoutMs) > 0
 								? Number(options.timeoutMs)
@@ -345,9 +323,7 @@ export class ZihinAgent implements INodeType {
 				returnData.push({
 					json: {
 						content: result.content,
-						// 'tokens' = o stream caiu antes da resposta final e este texto é a concatenação
-						// crua das iterações, com a deliberação do modelo. Ramifique nisto antes de
-						// mandar o conteúdo para um canal externo.
+
 						contentSource: result.contentSource,
 						sessionId: result.sessionId,
 						model: result.model,
@@ -361,25 +337,23 @@ export class ZihinAgent implements INodeType {
 						finishReason: result.finishReason,
 						executionId: result.executionId,
 						clientMessageId: result.clientMessageId,
-						// true = resposta REPETIDA de um turno anterior com o mesmo Client Message ID (sem usage).
+
 						idempotentReplay: result.idempotentReplay,
-						// Resposta enlatada de gate (atendimento humano, denylist): nenhum modelo rodou.
+
 						gated: result.gated,
 						acceptedFields: result.acceptedFields,
-						// Avisos do servidor (ex.: `redacted` — valor do Context alterado pela redação).
+
 						ignoredFields: result.ignoredFields,
 						...(options.includeRaw ? { raw: result.raw } : {}),
 					},
 					pairedItem: { item: i },
 				});
 			} catch (error) {
-				// ZihinAgentError já vem sanitizado; outros erros passam por sanitizeApiError
-				// (preserva diagnóstico sem arriscar vazar key/request-id/stack).
+
 				const message =
 					error instanceof ZihinAgentError ? error.message : sanitizeApiError(error).message;
 				if (this.continueOnFail()) {
-					// Campos para ramificar no fluxo: `kind` (timeout, blocked, config…), `retryable` e
-					// os ids para suporte. Tudo já vem sanitizado do núcleo.
+
 					const details =
 						error instanceof ZihinAgentError
 							? {

@@ -36,10 +36,19 @@
     "test": "node test/node.test.js",
     "lint": "eslint nodes credentials utils --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "check:publication": "node scripts/check-publication.mjs",
+    "prepack": "npm run check:publication"
   },
   "files": [
-    "dist"
+    "dist/credentials/zihin.svg",
+    "dist/credentials/ZihinApi.credentials.js",
+    "dist/nodes/Zihin/Zihin.node.js",
+    "dist/nodes/Zihin/zihin.png",
+    "dist/nodes/Zihin/zihin.svg",
+    "dist/nodes/ZihinAgent/zihin.png",
+    "dist/nodes/ZihinAgent/zihin.svg",
+    "dist/nodes/ZihinAgent/ZihinAgent.node.js"
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,
