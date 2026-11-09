@@ -10,7 +10,8 @@ export class ZihinApi implements ICredentialType {
   name = 'zihinApi';
   displayName = 'Zihin API';
   icon: Icon = { light: 'file:zihin.svg', dark: 'file:zihin.svg' };
-  // eslint-disable-next-line n8n-nodes-base/cred-class-field-documentation-url-miscased -- e uma URL https (exigido por cred-class-field-documentation-url-not-http-url); a regra `miscased` a reescreveria em camelCase
+
+  // eslint-disable-next-line n8n-nodes-base/cred-class-field-documentation-url-miscased -- The credential requires an HTTPS URL, not a camelCase value.
   documentationUrl = 'https://docs.zihin.ai/integrations/n8n';
   properties: INodeProperties[] = [
     {
@@ -37,7 +38,7 @@ export class ZihinApi implements ICredentialType {
 
   test: ICredentialTestRequest = {
     request: {
-      // Valida a key listando os agentes do tenant (caminho de agente, não a call direta legada).
+
       baseURL: 'https://llm.zihin.ai',
       url: '/api/v2/agents',
       method: 'GET',

@@ -1,0 +1,27 @@
+{
+  "allow": [
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "dist/credentials/ZihinApi.credentials.js",
+    "dist/nodes/Zihin/Zihin.node.js",
+    "dist/nodes/Zihin/Zihin.node.json",
+    "dist/nodes/Zihin/zihin.svg",
+    "dist/nodes/ZihinAgent/ZihinAgent.node.js",
+    "dist/nodes/ZihinAgent/ZihinAgent.node.json",
+    "dist/nodes/ZihinAgent/zihin.svg",
+    "dist/nodes/ZihinAgent/zihin.dark.svg",
+    "dist/nodes/Zihin/zihin.dark.svg",
+    "dist/nodes/Zihin/zihin.png",
+    "dist/nodes/ZihinAgent/zihin.png",
+    "dist/credentials/zihin.svg"
+  ],
+  "required": [
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "dist/credentials/ZihinApi.credentials.js",
+    "dist/nodes/Zihin/Zihin.node.js",
+    "dist/nodes/ZihinAgent/ZihinAgent.node.js"
+  ]
+}
